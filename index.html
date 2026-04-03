@@ -315,12 +315,55 @@
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
     @media (max-width: 620px) {
+      /* Layout */
+      .container { padding: 16px 12px; }
       .features { grid-template-columns: 1fr; }
       .industry-grid { grid-template-columns: 1fr; }
       .results-grid { grid-template-columns: 1fr; }
-      .bench-grid { grid-template-columns: 1fr 1fr; }
-      .hero { padding: 32px 20px; }
-      .hero h2 { font-size: 1.5rem; }
+      .bench-grid { grid-template-columns: 1fr; }
+
+      /* Hero */
+      .hero { padding: 28px 16px; }
+      .hero h2 { font-size: 1.4rem; }
+      .hero p { font-size: 0.92rem; }
+      .hero-icon { font-size: 48px; }
+
+      /* Cards */
+      .card { padding: 20px 16px; }
+      .card h2 { font-size: 1.2rem; }
+      .domain-breakdown, .benchmark-card, .reco-card { padding: 20px 16px; }
+
+      /* Header */
+      header { padding: 12px 16px; }
+      header h1 { font-size: 1rem; }
+      header p { font-size: 0.72rem; }
+
+      /* Results header */
+      .results-header { padding: 24px 16px; }
+      .maturity-badge { padding: 12px 16px; flex-direction: column; text-align: center; gap: 6px; }
+      .maturity-badge .level-num { font-size: 2.8rem; }
+      .score-display { font-size: 0.8rem; }
+
+      /* Domain breakdown */
+      .domain-row-header { flex-direction: column; align-items: flex-start; gap: 2px; }
+      .domain-score { font-size: 0.78rem; }
+
+      /* Recommendations */
+      .reco-item { flex-direction: column; gap: 8px; }
+
+      /* Buttons */
+      .btn { padding: 10px 16px; font-size: 0.85rem; }
+      .nav-btns { gap: 8px; }
+      .results-actions { flex-direction: column; align-items: stretch; }
+      .results-actions > div { display: flex; gap: 8px; }
+      .results-actions .btn { flex: 1; justify-content: center; }
+
+      /* Charts */
+      .chart-card { padding: 16px; }
+      .chart-card h3 { font-size: 0.9rem; }
+
+      /* Challenges */
+      .challenge-btn { font-size: 0.85rem; padding: 12px 14px; }
     }
 
     @media print {
@@ -441,6 +484,9 @@
     <div class="benchmark-card" id="benchmark-summary"></div>
     <div class="reco-card" id="recommendations"></div>
     <div id="sheets-status" style="text-align:center;font-size:0.85rem;padding:10px;margin-bottom:12px;display:none;border-radius:10px;"></div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:0.8rem;color:#64748b;line-height:1.6;">
+      <strong style="color:#1e293b;">Disclaimer:</strong> These results are generated using Claude (AI) based on your self-reported responses. They are intended for informational and exploratory purposes only. Do not use them as the sole basis for any business decisions.
+    </div>
     <div class="results-actions nav-btns">
       <button class="btn btn-ghost" onclick="goBackToChallenges()">&larr; Back</button>
       <div style="display:flex; gap:12px;">
@@ -818,7 +864,7 @@ function renderQuestion() {
 
   document.getElementById('prev-btn').style.visibility = 'visible';
   document.getElementById('next-btn').disabled = answers[currentQ] === null;
-  document.getElementById('next-btn').textContent = currentQ === 19 ? 'View Results →' : 'Next →';
+  document.getElementById('next-btn').textContent = 'Next →';
 }
 
 function selectAnswer(level) {
@@ -1156,7 +1202,7 @@ function buildBarChart(domainScores) {
   });
 }
 
-const SHEETS_URL = "https://script.google.com/macros/s/AKfycbxTIjLPNPGUUGc7iVgZMubyzAEeXATqh4gTUx0wXfxo2D-WpujiA8gCmhQUPn6pDfe-Yw/exec";
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwZcAQ4TPvjK2RJE6jWSGO0-SPXDZT9S85eNy7Ax3js1HK9aj8nS6O6pV8H17VRcoQX/exec";
 
 function saveToSheets(domainScores, overall, maturityName, industryName) {
   const status = document.getElementById('sheets-status');
@@ -1166,8 +1212,7 @@ function saveToSheets(domainScores, overall, maturityName, industryName) {
   status.textContent = '⏳ Saving results to Google Sheets...';
 
   const challengeLabels = selectedChallenges
-    .map(id => CHALLENGES.find(c => c.id === id)?.text || id)
-    .join(' | ');
+    .map(id => CHALLENGES.find(c => c.id === id)?.text || id);
 
   const payload = {
     industry: industryName,
@@ -1180,27 +1225,32 @@ function saveToSheets(domainScores, overall, maturityName, industryName) {
     culture:       domainScores.culture.toFixed(2),
     integration:   domainScores.integration.toFixed(2),
     analytics:     domainScores.analytics.toFixed(2),
-    topChallenges: challengeLabels,
+    challenge1:    challengeLabels[0] || '',
+    challenge2:    challengeLabels[1] || '',
+    challenge3:    challengeLabels[2] || '',
   };
 
   fetch(SHEETS_URL, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  .then(r => r.json())
-  .then(data => {
+  .then(r => r.text())
+  .then(text => {
+    console.log('Sheets response:', text);
+    const data = JSON.parse(text);
     if (data.result === 'success') {
       status.style.background = '#d1fae5';
       status.style.color = '#065f46';
       status.textContent = '✅ Results saved to Google Sheets successfully!';
     } else {
-      throw new Error('Unexpected response');
+      throw new Error(data.message || 'Unexpected response');
     }
   })
-  .catch(() => {
+  .catch(err => {
+    console.error('Sheets error:', err);
     status.style.background = '#fee2e2';
     status.style.color = '#991b1b';
-    status.textContent = '❌ Could not save to Google Sheets. Check your Apps Script deployment.';
+    status.textContent = '❌ Error: ' + err.message;
   });
 }
 
