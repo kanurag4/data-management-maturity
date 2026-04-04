@@ -8,7 +8,7 @@ A free, browser-based self-assessment tool that helps organisations evaluate the
 2. **Answer 20 questions** — across 7 data management domains (keyboard shortcuts: `1`–`5` to select, `Enter`/`→` to advance, `←` to go back)
 3. **Identify your top challenges** — pick the 3 that resonate most
 4. **Get your results** — radar chart, bar chart, domain scores, and tailored recommendations benchmarked against your industry
-5. **Save as PDF** — download a formatted copy of your results
+5. **Print Results** — print or save a copy of your results via the browser print dialog
 
 ## Domains Assessed
 
@@ -48,7 +48,6 @@ Scores represent indicative sector averages on a 1–5 scale and should be inter
 
 - Single-file HTML app — no build step, no dependencies to install
 - [Chart.js](https://www.chartjs.org/) (loaded from CDN) for radar and bar charts
-- [html2pdf.js](https://github.com/eKoopmans/html2pdf.js) (loaded from CDN) for PDF export
 - Google Apps Script for auto-saving results to Google Sheets
 
 ## Google Sheets Integration

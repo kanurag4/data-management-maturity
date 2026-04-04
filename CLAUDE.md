@@ -45,9 +45,9 @@ Charts use **Chart.js** loaded from CDN (`cdn.jsdelivr.net`).
 
 `BENCHMARKS` object maps each of the 16 industry ids → 7 domain scores (1–5). Values are derived from EDM Council DCAM community assessments, Experian Global Data Management Research, IBM Institute for Business Value surveys, and TDWI Analytics Maturity benchmarks. Update scores here when new research is available.
 
-### PDF Export
+### Print / Save as PDF
 
-`savePDF()` uses **html2pdf.js** (CDN). It calls `window.showSaveFilePicker()` first if the browser supports it (Chrome/Edge on HTTPS) to open a native Save As dialog; otherwise falls back to a direct browser download. Nav buttons are hidden during capture and restored via `.then()` callback.
+The Print Results button calls `window.print()`. Print CSS in `@media print` hides all screens except `#screen-results` and removes nav buttons and header. Users can save as PDF via their browser's print dialog.
 
 ## Recommendations
 

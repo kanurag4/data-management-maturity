@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Management Maturity Assessment</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --primary: #1a56db;
@@ -492,7 +491,7 @@
     <div class="results-actions nav-btns">
       <button class="btn btn-ghost" onclick="goBackToChallenges()">&larr; Back</button>
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-outline" onclick="savePDF()">&#128196; Save as PDF</button>
+        <button class="btn btn-outline" onclick="window.print()">&#128438; Print Results</button>
         <button class="btn btn-outline" onclick="restartAssessment()">&#x21bb; Retake Assessment</button>
       </div>
     </div>
@@ -1334,22 +1333,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowLeft') { prevQuestion(); }
 });
 
-function savePDF() {
-  const el      = document.getElementById('screen-results');
-  const navBtns = el.querySelector('.nav-btns');
-  const name    = selectedIndustry ? selectedIndustry.name.replace(/\s+/g, '_') : 'Results';
-
-  navBtns.style.display = 'none';
-  html2pdf().set({
-    margin: 10,
-    filename: 'DM_Maturity_' + name + '.pdf',
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(el).save().then(function() {
-    navBtns.style.display = '';
-  });
-}
 
 function restartAssessment() {
   selectedIndustry = null;
