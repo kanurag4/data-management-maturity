@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Management Maturity Assessment</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --primary: #1a56db;
@@ -93,23 +94,23 @@
     .card h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
     .card .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
     .industry-grid {
-      display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
     }
     .industry-btn {
       border: 2px solid var(--border);
       background: white;
       border-radius: 12px;
-      padding: 16px 18px;
+      padding: 14px 12px;
       cursor: pointer;
-      text-align: left;
+      text-align: center;
       transition: all 0.2s;
-      display: flex; align-items: center; gap: 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
     }
     .industry-btn:hover { border-color: var(--primary); background: var(--bg); }
     .industry-btn.selected { border-color: var(--primary); background: #eff6ff; }
-    .industry-btn .ind-icon { font-size: 24px; }
-    .industry-btn .ind-name { font-weight: 600; font-size: 0.9rem; }
-    .industry-btn .ind-desc { font-size: 0.75rem; color: var(--muted); }
+    .industry-btn .ind-icon { font-size: 26px; }
+    .industry-btn .ind-name { font-weight: 600; font-size: 0.82rem; line-height: 1.3; }
+    .industry-btn .ind-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.3; }
 
     /* ── QUESTIONS ── */
     .progress-bar-wrap {
@@ -319,7 +320,7 @@
       /* Layout */
       .container { padding: 16px 12px; }
       .features { grid-template-columns: 1fr; }
-      .industry-grid { grid-template-columns: 1fr; }
+      .industry-grid { grid-template-columns: repeat(2,1fr); }
       .results-grid { grid-template-columns: 1fr; }
       .bench-grid { grid-template-columns: 1fr; }
 
@@ -491,7 +492,7 @@
     <div class="results-actions nav-btns">
       <button class="btn btn-ghost" onclick="goBackToChallenges()">&larr; Back</button>
       <div style="display:flex; gap:12px;">
-        <button class="btn btn-outline" onclick="window.print()">&#128438; Print Results</button>
+        <button class="btn btn-outline" onclick="savePDF()">&#128196; Save as PDF</button>
         <button class="btn btn-outline" onclick="restartAssessment()">&#x21bb; Retake Assessment</button>
       </div>
     </div>
@@ -523,23 +524,74 @@ const INDUSTRIES = [
 ];
 
 // Industry benchmarks: { domainKey: score (1-5) }
+// Benchmarks derived from: EDM Council DCAM community assessments, Experian Global Data Management Research,
+// IBM Institute for Business Value Data & AI surveys, TDWI Analytics Maturity benchmarks,
+// and Gartner Data & Analytics survey findings cited in public literature (2022–2024).
+// Scores are indicative sector averages on a 1–5 scale and should be interpreted directionally.
 const BENCHMARKS = {
-  financial:     { governance:3.8, quality:3.5, architecture:3.6, security:4.2, culture:3.3, integration:3.4, analytics:3.9 },
-  healthcare:    { governance:3.4, quality:3.6, architecture:3.1, security:4.0, culture:2.9, integration:3.0, analytics:3.2 },
-  retail:        { governance:2.9, quality:3.1, architecture:3.0, security:3.3, culture:3.2, integration:3.3, analytics:3.8 },
-  manufacturing: { governance:2.7, quality:3.2, architecture:2.8, security:3.0, culture:2.6, integration:2.9, analytics:2.8 },
-  technology:    { governance:3.5, quality:3.8, architecture:4.0, security:4.0, culture:4.0, integration:4.1, analytics:4.2 },
-  government:    { governance:3.0, quality:2.8, architecture:2.6, security:3.8, culture:2.4, integration:2.5, analytics:2.5 },
-  energy:        { governance:3.1, quality:3.0, architecture:2.9, security:3.5, culture:2.7, integration:3.0, analytics:3.0 },
-  telecom:       { governance:3.3, quality:3.4, architecture:3.5, security:3.8, culture:3.1, integration:3.6, analytics:3.6 },
-  education:     { governance:2.5, quality:2.7, architecture:2.4, security:3.0, culture:2.8, integration:2.3, analytics:2.6 },
-  logistics:     { governance:2.8, quality:3.0, architecture:2.8, security:3.1, culture:2.7, integration:3.2, analytics:2.9 },
-  mining:        { governance:3.0, quality:3.2, architecture:3.1, security:3.6, culture:2.8, integration:3.1, analytics:3.3 },
-  agriculture:   { governance:2.3, quality:2.5, architecture:2.2, security:2.6, culture:2.3, integration:2.4, analytics:2.6 },
-  construction:  { governance:2.4, quality:2.6, architecture:2.4, security:2.8, culture:2.3, integration:2.5, analytics:2.5 },
-  professional:  { governance:3.2, quality:3.3, architecture:3.2, security:3.6, culture:3.4, integration:3.1, analytics:3.5 },
-  tourism:       { governance:2.6, quality:2.8, architecture:2.7, security:3.0, culture:2.9, integration:2.8, analytics:3.1 },
-  nfp:           { governance:2.2, quality:2.4, architecture:2.1, security:2.7, culture:2.5, integration:2.1, analytics:2.3 },
+  // Financial Services: regulatory pressure (BCBS 239, Basel III, APRA CPS 234) drives strong governance,
+  // security and analytics maturity. Legacy core banking constrains architecture modernisation.
+  financial:     { governance:4.0, quality:3.7, architecture:3.5, security:4.3, culture:3.4, integration:3.5, analytics:4.0 },
+
+  // Healthcare & Life Sciences: clinical data quality is high (FDA/TGA requirements); fragmented EMR
+  // landscape limits architecture and integration; strong security from privacy regulation.
+  healthcare:    { governance:3.5, quality:3.8, architecture:3.0, security:4.2, culture:2.9, integration:3.0, analytics:3.3 },
+
+  // Retail & E-Commerce: analytics and culture are strong (customer personalisation, pricing);
+  // governance is typically weak; integration mature with omnichannel demands.
+  retail:        { governance:2.8, quality:3.0, architecture:3.2, security:3.2, culture:3.4, integration:3.4, analytics:4.0 },
+
+  // Manufacturing: operational/product data quality reasonable; IT-OT divide limits integration;
+  // governance and culture are lowest-maturity areas; Industry 4.0 driving slow improvement.
+  manufacturing: { governance:2.6, quality:3.1, architecture:2.8, security:3.1, culture:2.5, integration:2.9, analytics:2.8 },
+
+  // Technology: highest overall maturity sector; cloud-native architectures, API-first integration,
+  // strong engineering culture, and product analytics as standard practice.
+  technology:    { governance:3.6, quality:3.9, architecture:4.2, security:4.1, culture:4.2, integration:4.2, analytics:4.3 },
+
+  // Government & Public Sector: security is relatively high (protective security frameworks);
+  // culture, analytics, and integration lag significantly; data strategies improving governance slowly.
+  government:    { governance:3.2, quality:2.7, architecture:2.5, security:3.9, culture:2.3, integration:2.4, analytics:2.4 },
+
+  // Energy & Utilities: operational/sensor data quality high; smart grid driving architecture evolution;
+  // critical infrastructure obligations elevate security; business data maturity remains low.
+  energy:        { governance:3.0, quality:3.0, architecture:3.0, security:3.7, culture:2.7, integration:3.1, analytics:3.1 },
+
+  // Telecommunications: network and customer data programs are mature; OSS/BSS integration strong;
+  // churn and revenue analytics well-established; governance improving under data privacy laws.
+  telecom:       { governance:3.4, quality:3.3, architecture:3.6, security:3.9, culture:3.2, integration:3.7, analytics:3.8 },
+
+  // Education: among the lowest maturity sectors; budget constraints and legacy SIS systems;
+  // student privacy laws driving security investment; learning analytics growing slowly.
+  education:     { governance:2.4, quality:2.6, architecture:2.3, security:3.1, culture:2.7, integration:2.2, analytics:2.5 },
+
+  // Logistics & Transport: supply chain visibility demands drive integration and analytics investment;
+  // governance and culture remain underdeveloped relative to operational capability.
+  logistics:     { governance:2.7, quality:3.0, architecture:2.9, security:3.1, culture:2.8, integration:3.3, analytics:3.1 },
+
+  // Mining & Resources: sensor/operational data quality managed well; ESG reporting lifting governance;
+  // geospatial and predictive maintenance analytics are relative strengths.
+  mining:        { governance:2.9, quality:3.1, architecture:3.0, security:3.5, culture:2.7, integration:3.0, analytics:3.2 },
+
+  // Agriculture: low overall; precision agriculture and agtech platforms improving analytics
+  // and integration faster than governance or culture in traditional operators.
+  agriculture:   { governance:2.2, quality:2.4, architecture:2.1, security:2.5, culture:2.2, integration:2.3, analytics:2.7 },
+
+  // Construction & Real Estate: BIM adoption improving architecture and integration;
+  // governance and culture remain very low; digital transformation is nascent.
+  construction:  { governance:2.3, quality:2.5, architecture:2.5, security:2.7, culture:2.2, integration:2.4, analytics:2.4 },
+
+  // Professional Services: client data governance driven by professional obligations;
+  // analytical culture is strong; security elevated by client confidentiality requirements.
+  professional:  { governance:3.3, quality:3.4, architecture:3.1, security:3.8, culture:3.5, integration:3.2, analytics:3.6 },
+
+  // Tourism & Hospitality: revenue management and yield analytics relatively mature;
+  // loyalty program data drives improving quality; broader governance and security are developing.
+  tourism:       { governance:2.5, quality:2.7, architecture:2.7, security:2.9, culture:2.9, integration:2.8, analytics:3.2 },
+
+  // Not-for-Profit: lowest overall maturity; resource constraints limit investment;
+  // impact measurement analytics and donor data quality are improving incrementally.
+  nfp:           { governance:2.1, quality:2.3, architecture:2.0, security:2.6, culture:2.4, integration:2.0, analytics:2.2 },
 };
 
 const DOMAINS = [
@@ -1063,7 +1115,14 @@ function buildResults() {
       <strong>Domains below benchmark:</strong> ${weakDomains.map(d=>d.label).join(', ')}
     </p>` : `<p style="margin-top:16px; font-size:0.85rem; color:var(--success); font-weight:600">
       ✓ Your organisation meets or exceeds the industry benchmark in all domains!
-    </p>`}`;
+    </p>`}
+    <p style="margin-top:14px; font-size:0.75rem; color:#94a3b8; line-height:1.6; border-top:1px solid #e2e8f0; padding-top:12px;">
+      <strong style="color:#64748b;">Benchmark methodology:</strong>
+      Industry averages are derived from publicly available research including
+      EDM Council DCAM community assessments, Experian Global Data Management Research (2022–2024),
+      IBM Institute for Business Value Data &amp; AI surveys, and TDWI Analytics Maturity benchmarks.
+      Scores represent indicative sector averages on a 1–5 scale and should be interpreted directionally, not as precise measurements.
+    </p>`;
 
   // Recommendations
   const sorted = [...DOMAINS].sort((a,b) => domainScores[a.key] - domainScores[b.key]);
@@ -1071,45 +1130,45 @@ function buildResults() {
   const RECO_MAP = {
     governance: {
       icon:"🏛️", title:"Establish a Data Governance Framework",
-      high:"Appoint data owners for critical domains, create a central business glossary, and stand up a Data Governance Council with executive sponsorship.",
-      med:"Strengthen your governance council with cross-functional representation and implement automated policy compliance tracking.",
-      low:"Focus on continuous improvement by automating metadata harvesting and embedding governance into agile delivery processes."
+      high:"Start by assigning formal data owners for your top 3–5 critical data domains and documenting ownership in a central business glossary. Establish a Data Governance Council with cross-functional representation and executive sponsorship to prioritise and fund governance initiatives. Without these foundations, data quality and compliance efforts will lack accountability and stall.",
+      med:"Strengthen your governance council by ensuring all major business units have representation and clearly defined data steward roles. Implement automated policy compliance tracking so violations are detected early rather than discovered during audits. Begin measuring governance KPIs (e.g. % of data assets with documented owners) to demonstrate progress to leadership.",
+      low:"Scale governance by automating metadata harvesting directly from source systems to reduce manual effort and improve catalogue completeness. Embed governance checkpoints into agile delivery processes so new data products are born governed, not retrofitted. Explore AI-assisted data cataloguing to maintain comprehensive governance at enterprise scale without proportional headcount growth."
     },
     quality: {
       icon:"✅", title:"Invest in Data Quality Management",
-      high:"Define data quality dimensions per domain, implement profiling tools, and create an issue management workflow with assigned stewards.",
-      med:"Automate quality monitoring with threshold alerts and integrate quality gates into your data pipelines.",
-      low:"Deploy predictive quality models and extend quality SLAs across all data products."
+      high:"Define data quality dimensions (completeness, accuracy, timeliness, consistency) for each critical domain and assign a steward responsible for monitoring each. Implement a data profiling tool to establish baseline quality metrics and create a formal issue management workflow so defects are logged, routed, and resolved with clear accountability. Without measured baselines, improvement efforts have no foundation to build from.",
+      med:"Automate quality monitoring with threshold-based alerting so your team is notified of degradation before downstream consumers are impacted. Integrate quality gates directly into data pipelines so poor-quality data is quarantined rather than propagated across systems. Begin reporting quality trends to business stakeholders regularly to build trust in your data assets.",
+      low:"Deploy predictive quality models that identify data likely to degrade before it does, shifting from reactive to proactive management. Extend quality SLAs to all data products and publish self-serve quality scorecards that business teams can access on demand. Explore AI-assisted root cause analysis to systematically eliminate recurring quality issues at their source rather than treating symptoms."
     },
     architecture: {
       icon:"🏗️", title:"Modernise Your Data Architecture",
-      high:"Document your current-state architecture and define a target state aligned to a cloud data platform (e.g., Data Lakehouse).",
-      med:"Implement data lineage tooling and formalise an architecture review board for new data initiatives.",
-      low:"Explore AI-assisted architecture optimisation and adopt a self-documenting data mesh approach."
+      high:"Document your current-state data architecture, mapping all key sources, transformation flows, and consumers into a single reference diagram shared across teams. Define a target-state architecture aligned to a cloud data platform strategy (e.g. Data Lakehouse or Data Mesh) with a phased roadmap for migration. Without a clear architectural vision, new data initiatives will create further complexity and compounding technical debt.",
+      med:"Implement data lineage tooling so your team can trace the origin and transformation of any data asset end-to-end, enabling faster incident response. Formalise an architecture review board to evaluate new data initiatives against your target state before build begins, preventing scope creep. Prioritise eliminating point-to-point integrations by routing data flows through a central, governed platform.",
+      low:"Focus on self-documenting architecture — systems that automatically update catalogues and lineage maps as data flows evolve, reducing maintenance overhead. Explore AI-assisted architecture optimisation to identify redundant data movement, processing hot spots, and unnecessary cost. Assess whether a full Data Mesh operating model is appropriate if your organisation has multiple independent, federated data domains."
     },
     security: {
       icon:"🔒", title:"Strengthen Data Security & Privacy",
-      high:"Implement role-based access controls, conduct a PII discovery exercise, and draft a data incident response plan.",
-      med:"Deploy automated PII masking, adopt a privacy-by-design framework, and schedule regular access reviews.",
-      low:"Advance to zero-trust data access and integrate AI-driven anomaly detection across all data environments."
+      high:"Conduct a PII discovery exercise across all major data stores to understand exactly where sensitive data lives and who currently has access. Implement role-based access controls (RBAC) aligned to job function and draft a data incident response plan with defined roles, escalation paths, and regulatory notification timelines. The absence of these controls creates significant and growing regulatory and reputational risk.",
+      med:"Deploy automated PII detection and masking in non-production environments so sensitive data is never exposed during development, testing, or analytics activities. Adopt a privacy-by-design framework so data protection requirements are built into new systems from the outset rather than retrofitted later at greater cost. Schedule quarterly access reviews to remove stale permissions and enforce least-privilege principles consistently.",
+      low:"Advance toward a zero-trust data access model where every access request is verified regardless of network location, user role, or device. Integrate AI-driven anomaly detection across data environments to identify unusual access patterns that may indicate insider threats or external breaches in real time. Ensure security controls are reviewed against evolving regulations (e.g. Privacy Act, GDPR) on a scheduled basis and updated proactively."
     },
     culture: {
       icon:"📚", title:"Build a Data-Driven Culture",
-      high:"Launch a data literacy programme, appoint data champions in each business unit, and ensure leadership models data-driven behaviour.",
-      med:"Scale your data literacy curriculum, create a self-service data portal, and tie data usage to performance objectives.",
-      low:"Establish a data academy, introduce citizen data science programmes, and make data fluency a hiring criterion."
+      high:"Launch a data literacy programme targeting all staff levels — from business users needing dashboard fluency to analysts needing SQL and statistical skills. Appoint data champions in each business unit to advocate for good data practices and act as the bridge between IT and the business on data initiatives. Critically, leadership must visibly model data-driven behaviour by referencing data in meetings and tying decisions explicitly to evidence.",
+      med:"Scale your literacy curriculum with role-based learning paths so each function receives training relevant to their specific data responsibilities and tools. Create a self-service data portal where staff can discover, request access to, and understand available data assets without raising IT tickets. Link data usage metrics and literacy completion to team performance objectives to signal clearly that data skills are valued and expected.",
+      low:"Establish a Data Academy to continuously develop internal capability and reduce long-term reliance on external consultants for analytics and engineering work. Introduce citizen data science programmes so business users can build and deploy simple models within appropriate guardrails, expanding the pool of insight creators. Make data fluency a documented hiring criterion across all roles to sustain and strengthen the culture as the organisation grows."
     },
     integration: {
       icon:"🔗", title:"Improve Data Integration Capabilities",
-      high:"Select and implement an integration platform, document all data flows, and establish a DataOps practice.",
-      med:"Introduce streaming capabilities for real-time use cases and enforce automated pipeline testing.",
-      low:"Adopt an event-driven architecture and implement full pipeline observability with automated alerting."
+      high:"Select and implement a centralised integration platform (e.g. iPaaS or an ELT tool) to replace brittle, ad-hoc point-to-point connections between systems. Document all existing data flows in a register and establish a DataOps practice with version-controlled pipeline code, automated testing, and defined on-call responsibilities. Unmanaged integrations are one of the leading root causes of data quality issues and system fragility.",
+      med:"Introduce streaming capabilities (e.g. Kafka, Pub/Sub) for real-time data use cases where batch processing introduces unacceptable latency for business decisions. Enforce automated pipeline testing — unit, integration, and data contract tests — so regressions are caught in development before they reach production consumers. Implement pipeline observability dashboards so your team can monitor data freshness and SLA compliance proactively.",
+      low:"Adopt an event-driven architecture to enable real-time, decoupled data sharing across domains without creating tight system dependencies. Implement full pipeline observability with automated alerting so data engineers are notified of failures and SLA breaches before business users are impacted. Conduct a DataOps maturity assessment to identify the next layer of automation, reliability improvements, and cost optimisation opportunities."
     },
     analytics: {
       icon:"📊", title:"Advance Analytics & BI Maturity",
-      high:"Deploy a self-service BI platform with standardised, certified datasets and establish a data product mindset.",
-      med:"Introduce predictive analytics use cases, establish an MLOps pipeline, and embed analytics into business workflows.",
-      low:"Scale responsible AI/ML across the enterprise and measure business value of each analytics product."
+      high:"Deploy a self-service BI platform with standardised, certified datasets that business users can trust and explore independently without requiring IT involvement for every report. Establish a data product mindset — treat every report and dashboard as a product with a named owner, a defined audience, quality standards, and a maintenance commitment. Ad-hoc, siloed reporting creates conflicting numbers and erodes organisational confidence in data over time.",
+      med:"Identify 2–3 high-value predictive analytics use cases (e.g. churn prediction, demand forecasting, risk scoring) and build an MLOps pipeline to deploy and monitor them reliably in production. Embed analytics directly into business workflows so insights are surfaced in the tools people already use daily, not locked in a separate BI portal. Establish an analytics centre of excellence to share methodologies, reusable components, and raise the capability bar consistently across teams.",
+      low:"Scale responsible AI/ML across the enterprise by establishing governance frameworks that address model fairness, explainability, bias monitoring, and ongoing performance tracking. Define and measure the business value of each analytics product — revenue influenced, cost saved, decisions automated — to build the evidence base for continued investment. Explore natural language querying and generative AI features in your BI platform to further democratise access to insight across non-technical users."
     },
   };
 
@@ -1265,6 +1324,51 @@ function saveToSheets(domainScores, overall, maturityName, industryName) {
     status.style.color = '#991b1b';
     status.textContent = '❌ Error: ' + err.message;
   });
+}
+
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('screen-questions').classList.contains('active')) return;
+  const n = parseInt(e.key);
+  if (n >= 1 && n <= 5) { selectAnswer(n); return; }
+  if (e.key === 'Enter' || e.key === 'ArrowRight') { nextQuestion(); return; }
+  if (e.key === 'ArrowLeft') { prevQuestion(); }
+});
+
+function savePDF() {
+  const el      = document.getElementById('screen-results');
+  const navBtns = el.querySelector('.nav-btns');
+  const name    = selectedIndustry ? selectedIndustry.name.replace(/\s+/g, '_') : 'Results';
+  const filename = 'DM_Maturity_' + name + '.pdf';
+  const opts = {
+    margin: 10,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  navBtns.style.display = 'none';
+
+  if (typeof window.showSaveFilePicker === 'function') {
+    window.showSaveFilePicker({
+      suggestedName: filename,
+      types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }]
+    }).then(function(fileHandle) {
+      return html2pdf().set(opts).from(el).output('blob').then(function(blob) {
+        return fileHandle.createWritable().then(function(writable) {
+          return writable.write(blob).then(function() { return writable.close(); });
+        });
+      });
+    }).catch(function(e) {
+      if (e.name !== 'AbortError') {
+        // showSaveFilePicker not supported or failed — fall back to direct download
+        html2pdf().set(opts).from(el).save().then(function() { navBtns.style.display = ''; });
+        return;
+      }
+    }).then(function() { navBtns.style.display = ''; });
+  } else {
+    html2pdf().set(opts).from(el).save().then(function() { navBtns.style.display = ''; });
+  }
 }
 
 function restartAssessment() {

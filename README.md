@@ -5,9 +5,10 @@ A free, browser-based self-assessment tool that helps organisations evaluate the
 ## What It Does
 
 1. **Select your industry** — 16 Australian industries covered
-2. **Answer 20 questions** — across 7 data management domains
+2. **Answer 20 questions** — across 7 data management domains (keyboard shortcuts: `1`–`5` to select, `Enter`/`→` to advance, `←` to go back)
 3. **Identify your top challenges** — pick the 3 that resonate most
 4. **Get your results** — radar chart, bar chart, domain scores, and tailored recommendations benchmarked against your industry
+5. **Save as PDF** — download a formatted copy of your results
 
 ## Domains Assessed
 
@@ -29,10 +30,25 @@ Financial Services, Healthcare & Life Sciences, Retail & E-Commerce, Manufacturi
 
 No installation required. Open `index.html` directly in any modern browser, or visit the hosted version.
 
+## Recommendations
+
+Results include **Top Improvement Recommendations** for the 3 lowest-scoring domains. Each recommendation provides 3 sentences of tailored advice calibrated to your score level — foundational actions for low scores, scaling and automation guidance for mid-range, and advanced optimisation for high scores.
+
+## Benchmark Methodology
+
+Industry benchmarks are derived from publicly available research including:
+- **EDM Council DCAM** community assessments
+- **Experian Global Data Management Research** (2022–2024)
+- **IBM Institute for Business Value** Data & AI surveys
+- **TDWI Analytics Maturity** benchmarks
+
+Scores represent indicative sector averages on a 1–5 scale and should be interpreted directionally.
+
 ## Tech Stack
 
 - Single-file HTML app — no build step, no dependencies to install
 - [Chart.js](https://www.chartjs.org/) (loaded from CDN) for radar and bar charts
+- [html2pdf.js](https://github.com/eKoopmans/html2pdf.js) (loaded from CDN) for PDF export
 - Google Apps Script for auto-saving results to Google Sheets
 
 ## Google Sheets Integration
