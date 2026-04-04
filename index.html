@@ -249,6 +249,10 @@
     .bench-item.negative .b-value { color: var(--danger); }
     .bench-item.neutral .b-value { color: var(--primary); }
 
+    .exec-summary { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); margin-bottom: 24px; border-left: 4px solid var(--primary); }
+    .exec-summary h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--primary); }
+    .exec-summary p { font-size: 0.92rem; line-height: 1.85; color: var(--text); margin-bottom: 12px; }
+    .exec-summary p:last-child { margin-bottom: 0; }
     .reco-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); margin-bottom: 24px; }
     .reco-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; }
     .reco-item {
@@ -482,6 +486,7 @@
   <!-- ═══════════════════ SCREEN 5: RESULTS ═══════════════════ -->
   <div id="screen-results" class="screen">
     <div class="results-header" id="results-header"></div>
+    <div class="exec-summary" id="exec-summary"></div>
     <div class="results-grid">
       <div class="chart-card">
         <h3>Domain Scores vs Industry Benchmark</h3>
@@ -1049,6 +1054,57 @@ function goBackToChallenges() {
 // ═══════════════════════════════════════════════════════
 //  RESULTS
 // ═══════════════════════════════════════════════════════
+function buildExecSummary(domainScores, overall, maturity, bench, industry, benchOverall, diff) {
+  const sortedAsc  = [...DOMAINS].sort((a,b) => domainScores[a.key] - domainScores[b.key]);
+  const sortedDesc = [...DOMAINS].sort((a,b) => domainScores[b.key] - domainScores[a.key]);
+  const strongest  = sortedDesc[0];
+  const biggestGap = [...DOMAINS].sort((a,b) =>
+    (domainScores[a.key] - bench[a.key]) - (domainScores[b.key] - bench[b.key])
+  )[0];
+
+  // Para 1 — score, level, benchmark
+  let benchPhrase;
+  if (diff > 0.3)       benchPhrase = `This is <strong>above the ${industry.name} sector average of ${benchOverall.toFixed(1)}</strong>, indicating your organisation is ahead of most peers in its industry.`;
+  else if (diff > 0.1)  benchPhrase = `This is <strong>slightly above the ${industry.name} sector average of ${benchOverall.toFixed(1)}</strong>.`;
+  else if (diff > -0.1) benchPhrase = `This is <strong>broadly in line with the ${industry.name} sector average of ${benchOverall.toFixed(1)}</strong>.`;
+  else if (diff > -0.3) benchPhrase = `This is <strong>slightly below the ${industry.name} sector average of ${benchOverall.toFixed(1)}</strong>, suggesting targeted improvement is needed in several areas.`;
+  else                   benchPhrase = `This is <strong>below the ${industry.name} sector average of ${benchOverall.toFixed(1)}</strong>, highlighting meaningful gaps relative to sector peers.`;
+
+  const para1 = `Your organisation scored <strong>${overall.toFixed(2)} out of 5.0</strong>, placing it at <strong>Level ${maturity.level} — ${maturity.name}</strong> in the Data Management Maturity Model. ${maturity.desc}. ${benchPhrase}`;
+
+  // Para 2 — strongest domain and biggest gap
+  const strongScore = domainScores[strongest.key];
+  const strongBench = bench[strongest.key];
+  const strongDiff  = strongScore - strongBench;
+  const strongPhrase = strongDiff >= 0.1
+    ? `, exceeding the sector benchmark of ${strongBench.toFixed(1)} by ${strongDiff.toFixed(1)} points`
+    : strongDiff > -0.1
+      ? `, broadly in line with the sector benchmark of ${strongBench.toFixed(1)}`
+      : `, though still ${Math.abs(strongDiff).toFixed(1)} points below the sector benchmark of ${strongBench.toFixed(1)}`;
+
+  const gapScore = domainScores[biggestGap.key];
+  const gapBench = bench[biggestGap.key];
+  const gapDiff  = gapScore - gapBench;
+  const gapPhrase = gapDiff < 0
+    ? `Your largest gap relative to sector peers is <strong>${biggestGap.label}</strong>, where your score of ${gapScore.toFixed(1)} is <strong>${Math.abs(gapDiff).toFixed(1)} points below the ${industry.name} benchmark of ${gapBench.toFixed(1)}</strong> — this represents your most critical area for investment.`
+    : `Notably, <strong>${biggestGap.label}</strong> scores ${gapScore.toFixed(1)} against a sector benchmark of ${gapBench.toFixed(1)} — a strong relative position across all domains.`;
+
+  const para2 = `Your strongest performing domain is <strong>${strongest.label}</strong> (${strongScore.toFixed(1)} / 5.0)${strongPhrase}. ${gapPhrase}`;
+
+  // Para 3 — challenges and focus areas
+  const challengeLabels = selectedChallenges.map(id => {
+    const c = CHALLENGES.find(ch => ch.id === id);
+    return c ? `<strong>${c.text.replace(/\.$/, '')}</strong>` : id;
+  });
+  const top3Labels = sortedAsc.slice(0,3).map(d => `<strong>${d.label}</strong>`).join(', ');
+  const para2extended = `${para2} Your team also identified ${challengeLabels[0]}, ${challengeLabels[1]}, and ${challengeLabels[2]} as the most pressing organisational challenges. The recommendations below focus on ${top3Labels} — the three domains with the greatest opportunity for uplift.`;
+
+  document.getElementById('exec-summary').innerHTML = `
+    <h3>📋 Executive Summary</h3>
+    <p>${para1}</p>
+    <p>${para2extended}</p>`;
+}
+
 function buildResults() {
   const { domainScores, overall } = computeScores();
   const maturity = getMaturityLevel(overall);
@@ -1072,6 +1128,9 @@ function buildResults() {
       &nbsp;|&nbsp; Benchmark: <strong>${benchOverall.toFixed(2)}</strong>
       &nbsp;|&nbsp; Gap: <strong style="color:${diff>=0?'#86efac':'#fca5a5'}">${diff>=0?'+':''}${diff.toFixed(2)}</strong>
     </div>`;
+
+  // Executive summary
+  buildExecSummary(domainScores, overall, maturity, bench, industry, benchOverall, diff);
 
   // Charts
   buildRadarChart(domainScores, bench);

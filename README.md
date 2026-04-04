@@ -7,7 +7,7 @@ A free, browser-based self-assessment tool that helps organisations evaluate the
 1. **Select your industry** — 16 Australian industries covered
 2. **Answer 20 questions** — across 7 data management domains (keyboard shortcuts: `1`–`5` to select, `Enter`/`→` to advance, `←` to go back)
 3. **Identify your top challenges** — pick the 3 that resonate most
-4. **Get your results** — radar chart, bar chart, domain scores, and tailored recommendations benchmarked against your industry
+4. **Get your results** — executive summary narrative, radar chart, bar chart, domain scores, and tailored recommendations benchmarked against your industry
 5. **Print Results** — print or save a copy of your results via the browser print dialog
 
 ## Domains Assessed
@@ -29,6 +29,12 @@ Financial Services, Healthcare & Life Sciences, Retail & E-Commerce, Manufacturi
 ## Usage
 
 No installation required. Open `index.html` directly in any modern browser, or visit the hosted version.
+
+## Executive Summary
+
+Each results page opens with a personalised 2-paragraph prose narrative:
+- **Paragraph 1** — overall score, maturity level name, level description, and nuanced benchmark comparison (above / slightly above / in line / below sector average)
+- **Paragraph 2** — strongest domain with benchmark delta, biggest gap domain with exact score vs industry benchmark, selected challenges, and the three focus domains for improvement
 
 ## Recommendations
 

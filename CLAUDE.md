@@ -35,9 +35,20 @@ Navigation is handled by `showScreen(id)`. State is held in module-level vars (`
 
 `1`–`5` select the answer level; `Enter` / `→` advance to next question; `←` goes back. Listener is scoped to `#screen-questions.active` only.
 
-### Scoring
+### Scoring & Results
 
-`computeScores()` averages per-domain answers → `buildResults()` renders charts + calls `saveToSheets()`.
+`computeScores()` averages per-domain answers → `buildResults()` calls, in order:
+1. `buildExecSummary()` — generates the 2-paragraph prose narrative
+2. `buildRadarChart()` / `buildBarChart()` — renders Chart.js charts
+3. Domain breakdown, benchmark summary, recommendations, then `saveToSheets()`
+
+### Executive Summary
+
+`buildExecSummary(domainScores, overall, maturity, bench, industry, benchOverall, diff)` generates a personalised narrative injected into `#exec-summary`:
+- **Para 1**: score, maturity level + description, benchmark comparison phrase (5 tiers based on diff value)
+- **Para 2**: strongest domain + delta vs benchmark, biggest-gap domain + exact score vs benchmark, selected challenges, and top 3 focus domains
+
+The "biggest gap" domain is the one where `score − benchmark` is most negative (sorted ascending by that delta).
 
 Charts use **Chart.js** loaded from CDN (`cdn.jsdelivr.net`).
 
