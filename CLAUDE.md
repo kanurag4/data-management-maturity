@@ -31,9 +31,11 @@ Everything lives in `index.html` with three embedded sections:
 
 Navigation is handled by `showScreen(id)`. State is held in module-level vars (`selectedIndustry`, `answers`, `currentQ`, `selectedChallenges`). `restartAssessment()` resets all state.
 
-### Keyboard navigation (questions screen)
+### Navigation behaviour
 
-`1`–`5` select the answer level; `Enter` / `→` advance to next question; `←` goes back. Listener is scoped to `#screen-questions.active` only.
+- **Industry screen**: selecting an industry auto-advances to questions after 300 ms (no Next button).
+- **Questions screen**: selecting an answer calls `selectAnswer()` which auto-advances via `nextQuestion()` after 400 ms. Keyboard `1`–`5` trigger `selectAnswer()` and also auto-advance; `←` / `ArrowLeft` goes back. `Enter` / `→` still advance manually if needed. Listener is scoped to `#screen-questions.active` only.
+- **Challenges screen**: user manually clicks "View Results" after picking 3 challenges — no auto-advance.
 
 ### Scoring & Results
 
@@ -64,9 +66,9 @@ The Print Results button calls `window.print()`. Print CSS in `@media print` hid
 
 `RECO_MAP` inside `buildResults()` maps each domain key → `{ icon, title, high, med, low }`. Each advice string is 3 sentences tailored to the score band: `high` (score < 2), `med` (score 2–3.5), `low` (score > 3.5). The top 3 lowest-scoring domains are shown.
 
-## Google Sheets Integration
+## Response Saving
 
-Results auto-POST to a hardcoded Google Apps Script URL (`SHEETS_URL` constant near bottom of `<script>`). The Apps Script receives JSON and appends a row. To update the endpoint, change `SHEETS_URL`.
+Responses are saved anonymously via a hardcoded Google Apps Script URL (`SHEETS_URL` constant near bottom of `<script>`). No personal data is collected or stored. The Apps Script receives JSON and appends a row. To update the endpoint, change `SHEETS_URL`.
 
 ## Deployment
 

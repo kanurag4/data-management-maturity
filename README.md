@@ -5,7 +5,7 @@ A free, browser-based self-assessment tool that helps organisations evaluate the
 ## What It Does
 
 1. **Select your industry** — 16 Australian industries covered
-2. **Answer 20 questions** — across 7 data management domains (keyboard shortcuts: `1`–`5` to select, `Enter`/`→` to advance, `←` to go back)
+2. **Answer 20 questions** — across 7 data management domains; selecting an answer auto-advances (keyboard shortcut: `1`–`5` to select and auto-advance, `←` to go back)
 3. **Identify your top challenges** — pick the 3 that resonate most
 4. **Get your results** — executive summary narrative, radar chart, bar chart, domain scores, and tailored recommendations benchmarked against your industry
 5. **Print Results** — print or save a copy of your results via the browser print dialog
@@ -54,11 +54,11 @@ Scores represent indicative sector averages on a 1–5 scale and should be inter
 
 - Single-file HTML app — no build step, no dependencies to install
 - [Chart.js](https://www.chartjs.org/) (loaded from CDN) for radar and bar charts
-- Google Apps Script for auto-saving results to Google Sheets
+- Google Apps Script for anonymously saving responses
 
-## Google Sheets Integration
+## Response Saving
 
-Assessment results are automatically saved to a Google Sheet via Apps Script. To point to your own sheet, update the `SHEETS_URL` constant near the bottom of `index.html` with your own Apps Script deployment URL.
+Assessment responses are saved anonymously via Google Apps Script. No personal data is collected. To point to your own sheet, update the `SHEETS_URL` constant near the bottom of `index.html` with your own Apps Script deployment URL.
 
 ## Disclaimer
 

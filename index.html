@@ -430,7 +430,8 @@
           <p>Compare against your sector peers</p>
         </div>
       </div>
-      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:20px;">⏱ Takes about 5–7 minutes</p>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">⏱ Takes about 5–7 minutes</p>
+      <p style="font-size:0.8rem; color:var(--muted); margin-bottom:20px;">🔒 Your responses are saved anonymously. No personal data is collected.</p>
       <button class="btn btn-primary" onclick="showScreen('screen-industry')">
         Start Assessment &rarr;
       </button>
@@ -446,7 +447,6 @@
     </div>
     <div class="nav-btns">
       <button class="btn btn-ghost" onclick="showScreen('screen-welcome')">&larr; Back</button>
-      <button class="btn btn-primary" id="industry-next-btn" disabled onclick="startAssessment()">Next: Begin Assessment &rarr;</button>
     </div>
   </div>
 
@@ -460,11 +460,10 @@
         <span id="progress-label">Question 1 of 20</span>
         <span id="domain-progress"></span>
       </div>
-      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;margin-top:-16px;">⌨ Tip: press <strong>1–5</strong> to select an answer, <strong>Enter</strong> to advance</p>
+      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;margin-top:-16px;">⌨ Tip: press <strong>1–5</strong> to select and auto-advance</p>
       <div id="question-body"></div>
       <div class="nav-btns">
         <button class="btn btn-ghost" id="prev-btn" onclick="prevQuestion()">&larr; Previous</button>
-        <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Next &rarr;</button>
       </div>
     </div>
   </div>
@@ -914,7 +913,7 @@ renderIndustries();
 function selectIndustry(id) {
   selectedIndustry = id;
   renderIndustries();
-  document.getElementById('industry-next-btn').disabled = false;
+  setTimeout(startAssessment, 300);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -948,13 +947,12 @@ function renderQuestion() {
     </div>`;
 
   document.getElementById('prev-btn').style.visibility = 'visible';
-  document.getElementById('next-btn').disabled = answers[currentQ] === null;
-  document.getElementById('next-btn').textContent = 'Next →';
 }
 
 function selectAnswer(level) {
   answers[currentQ] = level;
   renderQuestion();
+  setTimeout(nextQuestion, 400);
 }
 
 function nextQuestion() {
@@ -1355,7 +1353,7 @@ function saveToSheets(domainScores, overall, maturityName, industryName) {
   status.style.display = 'block';
   status.style.background = '#eff6ff';
   status.style.color = '#1a56db';
-  status.textContent = '⏳ Saving results to Google Sheets...';
+  status.textContent = '⏳ Saving responses...';
 
   const challengeLabels = selectedChallenges
     .map(id => CHALLENGES.find(c => c.id === id)?.text || id);
@@ -1387,7 +1385,7 @@ function saveToSheets(domainScores, overall, maturityName, industryName) {
     if (data.result === 'success') {
       status.style.background = '#d1fae5';
       status.style.color = '#065f46';
-      status.textContent = '✅ Results saved to Google Sheets successfully!';
+      status.textContent = '✅ Responses saved.';
     } else {
       throw new Error(data.message || 'Unexpected response');
     }
@@ -1415,7 +1413,6 @@ function restartAssessment() {
   currentQ = 0;
   selectedChallenges = [];
   renderIndustries();
-  document.getElementById('industry-next-btn').disabled = true;
   showScreen('screen-welcome');
 }
 </script>
