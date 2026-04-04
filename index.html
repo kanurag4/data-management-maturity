@@ -1338,37 +1338,17 @@ function savePDF() {
   const el      = document.getElementById('screen-results');
   const navBtns = el.querySelector('.nav-btns');
   const name    = selectedIndustry ? selectedIndustry.name.replace(/\s+/g, '_') : 'Results';
-  const filename = 'DM_Maturity_' + name + '.pdf';
-  const opts = {
-    margin: 10,
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
 
   navBtns.style.display = 'none';
-
-  if (typeof window.showSaveFilePicker === 'function') {
-    window.showSaveFilePicker({
-      suggestedName: filename,
-      types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }]
-    }).then(function(fileHandle) {
-      return html2pdf().set(opts).from(el).output('blob').then(function(blob) {
-        return fileHandle.createWritable().then(function(writable) {
-          return writable.write(blob).then(function() { return writable.close(); });
-        });
-      });
-    }).catch(function(e) {
-      if (e.name !== 'AbortError') {
-        // showSaveFilePicker not supported or failed — fall back to direct download
-        html2pdf().set(opts).from(el).save().then(function() { navBtns.style.display = ''; });
-        return;
-      }
-    }).then(function() { navBtns.style.display = ''; });
-  } else {
-    html2pdf().set(opts).from(el).save().then(function() { navBtns.style.display = ''; });
-  }
+  html2pdf().set({
+    margin: 10,
+    filename: 'DM_Maturity_' + name + '.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save().then(function() {
+    navBtns.style.display = '';
+  });
 }
 
 function restartAssessment() {
